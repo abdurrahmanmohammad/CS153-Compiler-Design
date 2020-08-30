@@ -161,11 +161,11 @@ public class Token
             case '.' :
             {
                 char nextChar = source.nextChar();
-                token.text += nextChar;
                 
                 // Is it the .. symbol?
                 if (nextChar == '.') 
                 {
+                    token.text += nextChar;
                     token.type = TokenType.DOUBLE_PERIOD;
                 }
                 
@@ -189,17 +189,18 @@ public class Token
             case '<' : 
             {
             	char nextChar = source.nextChar();
-                token.text += nextChar;
                 
                 // Is it the <= symbol?
                 if (nextChar == '=')
                 {
+                	token.text += nextChar;
                 	token.type = TokenType.LESS_EQUALS;
                 }
                 
                 // Is it the <> symbol?
                 else if(nextChar == '>')
                 {
+                	token.text += nextChar;
                 	token.type = TokenType.NOT_EQUALS;
                 }
                 
@@ -216,11 +217,11 @@ public class Token
             case '>' : 
             {
             	char nextChar = source.nextChar();
-                token.text += nextChar;
-                
+
                 // Is it the >= symbol?
                 if (nextChar == '=')
                 {
+                    token.text += nextChar;
                 	token.type = TokenType.GREATER_EQUALS;
                 }
                     
@@ -242,11 +243,11 @@ public class Token
             case ':' : 
             {
                 char nextChar = source.nextChar();
-                token.text += nextChar;
                 
                 // Is it the := symbol?
                 if (nextChar == '=') 
                 {
+                    token.text += nextChar;
                     token.type = TokenType.COLON_EQUALS;
                 }
                 
