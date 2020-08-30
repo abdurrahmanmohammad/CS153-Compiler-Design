@@ -113,7 +113,11 @@ public class Token
             token.value = Double.parseDouble(token.text);
         }
         
-        else tokenError(token, "Invalid number");
+        else 
+        {
+        	token.type = TokenType.ERROR;
+        	tokenError(token, "Invalid number");
+        }
         
         return token;
     }
@@ -175,9 +179,8 @@ public class Token
                     token.type = TokenType.PERIOD;
                     return token;  // already consumed :
                 }
-
-                break;
-            }
+            } break;
+            
             case '^' : token.type = TokenType.CARET;      break;
             case ',' : token.type = TokenType.COMMA;      break;
             case ';' : token.type = TokenType.SEMICOLON;  break;
@@ -210,9 +213,7 @@ public class Token
                     token.type = TokenType.LESS_THAN;
                     return token;  // already consumed :
                 }
-
-                break;
-            }
+            } break;
             
             case '>' : 
             {
@@ -231,9 +232,7 @@ public class Token
                     token.type = TokenType.GREATER_THAN;
                     return token;  // already consumed :
                 }
-
-                break;
-            }
+            } break;
             
             case '(' : token.type = TokenType.LPAREN;     break;
             case ')' : token.type = TokenType.RPAREN;     break;
@@ -257,13 +256,11 @@ public class Token
                     token.type = TokenType.COLON;
                     return token;  // already consumed :
                 }
-
-                break;
-            }
+            } break;
             
             case Source.EOF : token.type = TokenType.END_OF_FILE; break;
             
-            default: token.type = TokenType.ERROR;
+            default: token.type = TokenType.ERROR; tokenError(token, "Invalid special symbol");
         }
         
         source.nextChar();  // consume the special symbol
