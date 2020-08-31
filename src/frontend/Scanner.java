@@ -26,17 +26,13 @@ public class Scanner {
 	 */
 	public Token nextToken() {
 		char ch = source.currentChar();
-
 		// Skip blanks and other whitespace characters.
-		while (Character.isWhitespace(ch))
-			ch = source.nextChar();
-		
-		// Skip Comments
-		if(ch == '{')
-			while(ch != '}') ch = source.nextChar();
-		
-		
+		while (ch == '{' || Character.isWhitespace(ch)) // Skips: blanks -> comments -> blanks -> comments -> ...
+			if (ch == '{')
+				while (ch != '}')
+					ch = source.nextChar();
 
+		ch = source.nextChar();
 		if (Character.isLetter(ch)) // A-Z & a-z
 			return Token.word(ch, source);
 		else if (Character.isDigit(ch)) // 0-9
@@ -45,7 +41,7 @@ public class Scanner {
 			return Token.string(ch, source);
 		else { // Special Symbols
 			return Token.specialSymbol(ch, source);
-			
+
 		}
 	}
 }
