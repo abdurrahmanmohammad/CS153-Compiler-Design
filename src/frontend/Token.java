@@ -134,10 +134,51 @@ public class Token
 
         // Loop to append the rest of the characters of the string,
         // up to but not including the closing quote.
-        for (char ch = source.nextChar(); ch != '\''; ch = source.nextChar())
-        {
+//        for (char ch = source.nextChar(); ch != '\''; ch = source.nextChar())
+//        {
+//            
+//            token.text += ch;
+//        }
+        char ch = source.nextChar();
+   if(ch!='\'' && Character.isWhitespace(ch)==false) {
+      
+        while(ch != '\'') {
             token.text += ch;
+            ch = source.nextChar();
+            if(ch == firstChar) {
+                if(source.nextChar() == firstChar && source.nextChar() != '\'') {
+                token.text += ch;
+                ch = source.nextChar();
+                }
+            }
         }
+     }else {
+         boolean done=false;
+         if(ch=='\''){
+         while(done == false) { 
+                 if(source.nextChar() == '\'' && source.nextChar() == '\'') {
+                 token.text += ch;
+                 }
+                else {done=true;}
+         }
+         }else
+             done=false;
+             if(Character.isWhitespace(ch)==true){
+                 while(done == false) {
+        if(source.nextChar() == '\'' && source.nextChar() == '\'') {
+            token.text += ch;
+            token.text += firstChar;
+            token.text += ch;
+           source.nextChar();
+           } else {done=true;}
+             }
+            }
+         
+         
+     }
+   //&& Character.isWhitespace(ch)==false   
+        
+        
         
         token.text += '\'';  // append the closing '
         source.nextChar();   // and consume it
