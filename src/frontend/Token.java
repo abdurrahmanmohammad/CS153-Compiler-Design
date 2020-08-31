@@ -14,9 +14,9 @@ public class Token
     public enum TokenType
     {
         PROGRAM, BEGIN, END, REPEAT, UNTIL, WRITE, WRITELN, 
-        PERIOD, COLON, COLON_EQUALS, SEMICOLON,
-        PLUS, MINUS, STAR, SLASH, LPAREN, RPAREN, 
-        EQUALS, LESS_THAN,
+        PERIOD, DOUBLE_PERIOD, CARET, COLON, COLON_EQUALS, COMMA, NOT_EQUALS, SEMICOLON,
+        PLUS, MINUS, STAR, SLASH, LPAREN, RPAREN, LBRACKET, RBRACKET, 
+        EQUALS, LESS_THAN, LESS_EQUALS, GREATER_THAN, GREATER_EQUALS,
         IDENTIFIER, INTEGER, REAL, STRING, END_OF_FILE, ERROR
     }
     
@@ -113,7 +113,11 @@ public class Token
             token.value = Double.parseDouble(token.text);
         }
         
-        else tokenError(token, "Invalid number");
+        else 
+        {
+        	token.type = TokenType.ERROR;
+        	tokenError(token, "Invalid number");
+        }
         
         return token;
     }
@@ -158,25 +162,91 @@ public class Token
         
         switch (firstChar)
         {
-            case '.' : token.type = TokenType.PERIOD;     break;
+            case '.' :
+            {
+                char nextChar = source.nextChar();
+                
+                // Is it the .. symbol?
+                if (nextChar == '.') 
+                {
+                    token.text += nextChar;
+                    token.type = TokenType.DOUBLE_PERIOD;
+                }
+                
+                // No, it's just the . symbol.
+                else
+                {
+                    token.type = TokenType.PERIOD;
+                    return token;  // already consumed :
+                }
+            } break;
+            
+            case '^' : token.type = TokenType.CARET;      break;
+            case ',' : token.type = TokenType.COMMA;      break;
             case ';' : token.type = TokenType.SEMICOLON;  break;
             case '+' : token.type = TokenType.PLUS;       break;
             case '-' : token.type = TokenType.MINUS;      break;
             case '*' : token.type = TokenType.STAR;       break;
             case '/' : token.type = TokenType.SLASH;      break;
             case '=' : token.type = TokenType.EQUALS;     break;
-            case '<' : token.type = TokenType.LESS_THAN;  break;
+            case '<' : 
+            {
+            	char nextChar = source.nextChar();
+                
+                // Is it the <= symbol?
+                if (nextChar == '=')
+                {
+                	token.text += nextChar;
+                	token.type = TokenType.LESS_EQUALS;
+                }
+                
+                // Is it the <> symbol?
+                else if(nextChar == '>')
+                {
+                	token.text += nextChar;
+                	token.type = TokenType.NOT_EQUALS;
+                }
+                
+                // No, it's just the < symbol.
+                else
+                {
+                    token.type = TokenType.LESS_THAN;
+                    return token;  // already consumed :
+                }
+            } break;
+            
+            case '>' : 
+            {
+            	char nextChar = source.nextChar();
+
+                // Is it the >= symbol?
+                if (nextChar == '=')
+                {
+                    token.text += nextChar;
+                	token.type = TokenType.GREATER_EQUALS;
+                }
+                    
+                // No, it's just the > symbol.
+                else
+                {
+                    token.type = TokenType.GREATER_THAN;
+                    return token;  // already consumed :
+                }
+            } break;
+            
             case '(' : token.type = TokenType.LPAREN;     break;
             case ')' : token.type = TokenType.RPAREN;     break;
+            case '[' : token.type = TokenType.LBRACKET;     break;
+            case ']' : token.type = TokenType.RBRACKET;     break;
             
             case ':' : 
             {
                 char nextChar = source.nextChar();
-                token.text += nextChar;
                 
                 // Is it the := symbol?
                 if (nextChar == '=') 
                 {
+                    token.text += nextChar;
                     token.type = TokenType.COLON_EQUALS;
                 }
                 
@@ -186,13 +256,11 @@ public class Token
                     token.type = TokenType.COLON;
                     return token;  // already consumed :
                 }
-
-                break;
-            }
+            } break;
             
             case Source.EOF : token.type = TokenType.END_OF_FILE; break;
             
-            default: token.type = TokenType.ERROR;
+            default: token.type = TokenType.ERROR; tokenError(token, "Invalid special symbol");
         }
         
         source.nextChar();  // consume the special symbol
