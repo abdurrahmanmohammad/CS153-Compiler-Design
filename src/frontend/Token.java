@@ -165,7 +165,7 @@ public class Token {
 		if (token.text.length() == 3)
 			token.type = TokenType.CHARACTER;
 		else if (ch1 == Source.EOF) { // EOF
-			tokenError(token, "String not closed at");
+			tokenError(token, "String not closed");
 			token.type = TokenType.STRING; // Not ERROR
 		} else
 			token.type = TokenType.STRING;
@@ -287,8 +287,8 @@ public class Token {
 			token.type = TokenType.END_OF_FILE;
 			break;
 		default:
-			tokenError(token, "Invalid token at");
 			token.type = TokenType.ERROR;
+			tokenError(token, "Invalid token");
 		}
 
 		source.nextChar(); // consume the special symbol
