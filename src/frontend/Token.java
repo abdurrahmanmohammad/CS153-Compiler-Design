@@ -103,6 +103,8 @@ public class Token {
 	 */
 	public static Token number(char firstChar, Source source) {
 		Token token = new Token(firstChar);
+		token.lineNumber = source.lineNumber();
+		
 		int pointCount = 0;
 
 		// Loop to get the rest of the characters of the number token.
@@ -142,6 +144,7 @@ public class Token {
 	 */
 	public static Token string(char firstChar, Source source) {
 		Token token = new Token(firstChar); // the leading '
+		token.lineNumber = source.lineNumber();
 
 		// Loop to append the rest of the characters of the string,
 		// up to but not including the closing quote.
@@ -182,6 +185,7 @@ public class Token {
 	 */
 	public static Token specialSymbol(char firstChar, Source source) {
 		Token token = new Token(firstChar);
+		token.lineNumber = source.lineNumber();
 
 		switch (firstChar) {
 		case '.': {
