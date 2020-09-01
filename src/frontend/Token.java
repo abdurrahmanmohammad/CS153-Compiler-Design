@@ -224,12 +224,15 @@ public class Token {
 			break;
 		case '<': {
 			char nextChar = source.nextChar();
-			token.text += nextChar;
-
-			if (nextChar == '>') // Symbol: <>
+			
+			if (nextChar == '>') { // Symbol: <>
+				token.text += nextChar;
 				token.type = TokenType.NOT_EQUALS;
-			else if (nextChar == '=') // Symbol: <=
+			}
+			else if (nextChar == '=') { // Symbol: <=
+				token.text += nextChar;
 				token.type = TokenType.LESS_EQUALS;
+			}	
 			else { // No, it's just the < symbol.
 				token.type = TokenType.LESS_THAN;
 				return token; // already consumed <
@@ -238,10 +241,11 @@ public class Token {
 		}
 		case '>': {
 			char nextChar = source.nextChar();
-			token.text += nextChar;
 
-			if (nextChar == '=') // Symbol: <=
+			if (nextChar == '=') { // Symbol: <=
+				token.text += nextChar;
 				token.type = TokenType.GREATER_EQUALS;
+			}
 			else { // No, it's just the < symbol.
 				token.type = TokenType.GREATER_THAN;
 				return token; // already consumed <
@@ -268,10 +272,10 @@ public class Token {
 			break;
 		case ':': {
 			char nextChar = source.nextChar();
-			token.text += nextChar;
 
 			// Is it the := symbol?
 			if (nextChar == '=') {
+				token.text += nextChar;
 				token.type = TokenType.COLON_EQUALS;
 			}
 
