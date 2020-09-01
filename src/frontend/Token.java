@@ -163,7 +163,7 @@ public class Token {
 			token.type = TokenType.CHARACTER;
 		else if (ch1 == Source.EOF) { // EOF
 			tokenError(token, "String not closed at");
-			token.type = TokenType.ERROR;
+			token.type = TokenType.STRING; // Not ERROR
 		} else
 			token.type = TokenType.STRING;
 
