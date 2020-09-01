@@ -145,10 +145,6 @@ public class Token {
 
 		// Loop to append the rest of the characters of the string,
 		// up to but not including the closing quote.
-		/*
-		 * for (char ch = source.nextChar(); ch != '\''; ch = source.nextChar()) {
-		 * token.text += ch; }
-		 */
 		char ch1 = source.nextChar();
 		char ch2 = source.nextChar();
 		while (!(ch1 == '\'' && Character.isWhitespace(ch2))) {
