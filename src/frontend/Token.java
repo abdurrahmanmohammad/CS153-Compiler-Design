@@ -144,35 +144,45 @@ public class Token {
 	 */
 	public static Token string(char firstChar, Source source) {
 		Token token = new Token(firstChar); // the leading '
-		token.lineNumber = source.lineNumber();
 
-		// Loop to append the rest of the characters of the string,
-		// up to but not including the closing quote.
-		char ch1 = source.nextChar();
-		char ch2 = source.nextChar();
-		while (!(ch1 == '\'' && Character.isWhitespace(ch2))) {
-			if (ch1 == Source.EOF)
-				break; // No closing char
-			if (ch1 == '\'' && ch2 == '\'')
-				ch2 = source.nextChar();
-			token.text += ch1;
-			ch1 = ch2;
-			ch2 = source.nextChar();
-		}
+		char ch;
+		boolean escaped = false; //True when we find a ' character that could be used as an escape; mainly represents whether ' was the previous character
 
-		token.text += ch1; // append the closing ' (unless error)
+		// Loop to append the rest of the characters of the string unless we reach a closing ' or the EOF
+        for (ch = source.nextChar(); ch != Source.EOF; ch = source.nextChar()) {
+        	
+            if(escaped && ch != '\'') { // If the previous char was ', but the current char isn't ', so we know we're at the end of a string
+            	break;
+            }
+            
+            else if(escaped && ch == '\'') { // The previous char was ', and the current char is ', so we know the previous was an escape char
+            	escaped = false;
+            	token.text += ch;
+            }
+            
+            else if(ch == '\'') { // The current char is ', so it's either an escape char, or it's the end of the string
+            	escaped = true;
+            }
+            
+            else { // Standard case
+            	token.text += ch;
+            }	
+        }
 
-		if (token.text.length() == 3)
-			token.type = TokenType.CHARACTER;
-		else if (ch1 == Source.EOF) { // EOF
-			tokenError(token, "String not closed");
-			token.type = TokenType.STRING; // Not ERROR
-		} else
-			token.type = TokenType.STRING;
+		token.text += '\''; // append the closing '
+		source.nextChar(); // and consume it
 
 		// Don't include the leading and trailing ' in the value.
 		token.value = token.text.substring(1, token.text.length() - 1);
-
+		
+		if(token.text.length() == 3) // Is the token a single character surrounded by two quotes? If so, it's a Character
+			token.type = TokenType.CHARACTER;
+		else // If not, it's a String
+			token.type = TokenType.STRING;
+		
+        if(ch == Source.EOF)
+        	tokenError(token, "String not closed");
+        	
 		return token;
 	}
 
