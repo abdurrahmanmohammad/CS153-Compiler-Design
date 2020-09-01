@@ -169,8 +169,7 @@ public class Token {
             }	
         }
 
-		token.text += '\''; // append the closing '
-		source.nextChar(); // and consume it
+		token.text += '\''; // append the closing ' (it has already been consumed)
 
 		// Don't include the leading and trailing ' in the value.
 		token.value = token.text.substring(1, token.text.length() - 1);
