@@ -9,6 +9,7 @@ package frontend;
 
 import java.util.HashSet;
 
+import frontend.Token.TokenType;
 import intermediate.*;
 import static frontend.Token.TokenType.*;
 import static intermediate.Node.NodeType.*;
@@ -89,6 +90,7 @@ public class Parser
         statementStarters.add(REPEAT);
         statementStarters.add(Token.TokenType.WRITE);
         statementStarters.add(Token.TokenType.WRITELN);
+        statementStarters.add(Token.TokenType.CASE);
         
         // Tokens that can immediately follow a statement.
         statementFollowers.add(SEMICOLON);
@@ -119,6 +121,7 @@ public class Parser
             case REPEAT :     stmtNode = parseRepeatStatement();     break;
             case WRITE :      stmtNode = parseWriteStatement();      break;
             case WRITELN :    stmtNode = parseWritelnStatement();    break;
+            case CASE  :      stmtNode = parseCaseStatement();       break;
             case SEMICOLON :  stmtNode = null; break;  // empty statement
             
             default : syntaxError("Unexpected token");
@@ -269,6 +272,11 @@ public class Parser
         if (currentToken.type == IDENTIFIER)
         {
             node.adopt(parseVariable());
+            hasArgument = true;
+        }
+        else if(currentToken.type == CHARACTER)
+        {
+            node.adopt(parseCharacterConstant());
             hasArgument = true;
         }
         else if (currentToken.type == STRING)
@@ -472,7 +480,7 @@ public class Parser
         currentToken = scanner.nextToken();  // consume the string        
         return stringNode;
     }
-
+    
     private void syntaxError(String message)
     {
         System.out.println("SYNTAX ERROR at line " + lineNumber 
@@ -492,5 +500,116 @@ public class Parser
         System.out.println("SEMANTIC ERROR at line " + lineNumber 
                            + ": " + message + " at '" + currentToken.text + "'");
         errorCount++;
+    }
+    
+    //------------ Added in SimpleJavaV2 ------------\\ 
+    
+    private Node parseCharacterConstant()
+    {
+        // The current token should now be CHARACTER
+        
+        Node charNode = new Node(CHARACTER_CONSTANT);
+        charNode.value = currentToken.value;
+        
+        currentToken = scanner.nextToken();  // consume the character        
+        return charNode;
+    }
+
+    private Node parseCaseStatement()
+    {
+        Node caseNode = new Node(Node.NodeType.CASE);
+        currentToken = scanner.nextToken(); //Consume CASE token.
+        
+        caseNode.adopt(parseExpression()); //Adopts an expression node as first child node
+        
+        if(currentToken.type == OF)
+            currentToken = scanner.nextToken(); //Consume OF token 
+        else
+            syntaxError("Expecting OF");            
+        
+        while(currentToken.type != END) //loop until we get to an END token
+        {
+            caseNode.adopt(parseCaseBranch()); //Adopts case branch nodes until the Parser reaches an END token
+        }
+        
+        currentToken = scanner.nextToken(); //consume END token
+        
+    	return caseNode;
+    }
+    
+    private Node parseCaseBranch()
+    {
+        Node caseBranchNode = new Node(Node.NodeType.CASE_BRANCH);
+        
+        caseBranchNode.adopt(parseConstantList()); //Adopts a constant list node as the first node
+        
+        if(currentToken.type == COLON)
+            currentToken = scanner.nextToken(); //Consume : token
+        else
+            syntaxError("Expecting :");
+        
+        Node statement = parseStatement(); //Adopts a statement as the second node
+        
+        if(statement != null) //Ensure that it isn't an empty statement
+            caseBranchNode.adopt(statement);
+        
+        if(currentToken.type == SEMICOLON)
+            currentToken = scanner.nextToken(); //Consume ; token
+        else
+            syntaxError("Expecting ;");
+        
+        return caseBranchNode;
+    }
+    
+    private Node parseConstantList()
+    {
+        Node constantListNode = new Node(Node.NodeType.CONSTANT_LIST);
+        
+        constantListNode.adopt(parseConstant()); //Adopts a single constant node as the first child
+        
+        while(currentToken.type == COMMA)
+        {
+            currentToken = scanner.nextToken(); //consume COMMA token before constant
+            constantListNode.adopt(parseConstant()); //Adopt a constant node (if there it is part of a list, the current node will be a comma after completion)
+        }
+
+    	return constantListNode;
+    }
+    
+    private Node parseConstant()
+    {
+        Node constantNode = new Node(Node.NodeType.CONSTANT);
+        
+        if(currentToken.type == STRING)
+            constantNode.adopt(parseStringConstant());
+        
+        else if(currentToken.type == CHARACTER)
+            constantNode.adopt(parseCharacterConstant());
+        
+        else //if it isn't a string or a character, it could be id, integer, or real which may have a +, a -, or nothing before it. 
+        {
+            if(currentToken.type == PLUS) //a + symbol before an identifier or number
+                currentToken = scanner.nextToken(); //just consume it because it doesn't effect the value of the constant
+            
+            else if(currentToken.type == MINUS) //a - symbol before an identifier or number
+            {
+                constantNode.adopt(new Node(NEGATIVE)); //add a unary negative operator to the Constant node
+                currentToken = scanner.nextToken(); //consume the - symbol
+            }
+            
+            if(currentToken.type == IDENTIFIER)
+                constantNode.adopt(parseVariable());
+
+            else if(currentToken.type == INTEGER)
+                constantNode.adopt(parseIntegerConstant());
+            
+            else if(currentToken.type == REAL)
+                constantNode.adopt(parseRealConstant());
+            
+            else //if it isn't any of the above
+                syntaxError("Expecting STRING, CHARACTER, IDENTIFIER, INTEGER, or REAL");
+        }
+        
+    	return constantNode;
     }
 }
