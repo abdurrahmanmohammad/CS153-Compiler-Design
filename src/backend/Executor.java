@@ -30,6 +30,7 @@ public class Executor
         singletons.add(INTEGER_CONSTANT);
         singletons.add(REAL_CONSTANT);
         singletons.add(STRING_CONSTANT);
+        singletons.add(CHARACTER_CONSTANT);
         
         relationals.add(EQ);
         relationals.add(LT);
@@ -50,7 +51,8 @@ public class Executor
             case ASSIGN :   
             case LOOP : 
             case WRITE :
-            case WRITELN :  return visitStatement(node);
+            case WRITELN :  
+            case CASE:      return visitStatement(node);
             
             case TEST:      return visitTest(node);
             
@@ -75,7 +77,7 @@ public class Executor
             case LOOP :      return visitLoop(statementNode);
             case WRITE :     return visitWrite(statementNode);
             case WRITELN :   return visitWriteln(statementNode);
-            
+            case CASE  :     return visitCase(statementNode);
             default :        return null;
         }
     }
@@ -170,13 +172,13 @@ public class Executor
             Double value = (Double) visit(valueNode);
             System.out.printf(format, value);
         }
-        else  // node type STRING_CONSTANT
+        else  // node type STRING_CONSTANT or CHARACTER_CONSTANT
         {
             String format = "%";
             if (fieldWidth > 0) format += fieldWidth;
             format += "s";
             
-            String value = (String) visit(valueNode);
+            String value = "" +  visit(valueNode);
             System.out.printf(format, value);
         }
     }
@@ -192,6 +194,7 @@ public class Executor
                 case INTEGER_CONSTANT : return visitIntegerConstant(expressionNode);
                 case REAL_CONSTANT    : return visitRealConstant(expressionNode);
                 case STRING_CONSTANT  : return visitStringConstant(expressionNode);
+                case CHARACTER_CONSTANT: return visitCharacterConstant(expressionNode);
                 
                 default: return null;
             }
@@ -275,5 +278,68 @@ public class Executor
         System.out.printf("RUNTIME ERROR at line %d: %s: %s\n", 
                           lineNumber, message, node.text);
         System.exit(-2);
+    }
+    
+    //---------------- Added in SimpleJavaV2 ----------------\\ 
+    
+    private Object visitCharacterConstant(Node characterConstantNode)
+    {
+        return (Character) characterConstantNode.value;
+    }
+    
+    private Object visitCase(Node node)
+    {
+        Node exp = node.children.get(0);
+        Object value = visitExpression(exp);
+        
+        for(int i = 1; i < node.children.size(); i++) //loops through the branches
+        {
+            Node branch = node.children.get(i);
+            Node constList = branch.children.get(0);
+            
+            for(Node constant: constList.children) //loops through the constants in the constant list
+            {
+                if(value.equals(visitConstant(constant))) //checks if a value matches a constant
+                {
+                    if(branch.children.size() > 1) //ensures that the branch node has a statement
+                    {
+                        visitStatement(branch.children.get(1));
+                        return null;
+                    }
+                }
+            }
+            
+        }
+        
+        return null;
+    }
+    
+    private Object visitConstant(Node node)
+    {
+        Node child0 = node.children.get(0);
+        
+        switch(child0.type)
+        {
+            case STRING_CONSTANT:    return visitStringConstant(child0);
+            case CHARACTER_CONSTANT: return visitCharacterConstant(child0);
+            case INTEGER_CONSTANT:   return visitIntegerConstant(child0);
+            case REAL_CONSTANT:      return visitRealConstant(child0);
+            case VARIABLE:           return visitVariable(child0);
+            case POSITIVE:
+            case NEGATIVE: {
+                
+                int sign = (child0.type == POSITIVE)? 1: -1; //+1 if there was a + token, -1 if it there was a - token
+                Node child1 = node.children.get(1);
+                
+                switch(child1.type)
+                {
+                    case INTEGER_CONSTANT:   return sign * (Integer) visitIntegerConstant(child0);
+                    case REAL_CONSTANT:      return sign * (Double) visitRealConstant(child0);
+                    case VARIABLE:           return sign * (Double) visitVariable(child0);
+                }
+            }
+                
+            default: return null;
+        }
     }
 }

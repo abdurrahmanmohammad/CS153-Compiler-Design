@@ -502,7 +502,7 @@ public class Parser
         errorCount++;
     }
     
-    //------------ Added in SimpleJavaV2 ------------\\ 
+    //---------------- Added in SimpleJavaV2 ----------------\\ 
     
     private Node parseCharacterConstant()
     {
@@ -607,7 +607,7 @@ public class Parser
                 constantNode.adopt(parseRealConstant());
             
             else //if it isn't any of the above
-                syntaxError("Expecting STRING, CHARACTER, IDENTIFIER, INTEGER, or REAL");
+                syntaxError("Expecting Constant (STRING, CHARACTER, IDENTIFIER, INTEGER, or REAL)");
         }
         
     	return constantNode;

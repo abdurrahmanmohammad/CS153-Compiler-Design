@@ -172,7 +172,11 @@ public class Token {
 			// Don't include the leading and trailing ' in the value.
 			token.value = token.text.substring(1, token.text.length() - 1);
 			if (token.text.length() == 3)
-				token.type = TokenType.CHARACTER;
+			{
+			    token.type = TokenType.CHARACTER;
+			    token.value = token.text.charAt(1);
+			}
+				
 			else
 				token.type = TokenType.STRING; // If not, it's a String
 		}
