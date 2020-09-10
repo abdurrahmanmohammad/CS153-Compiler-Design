@@ -63,10 +63,14 @@ public class Parser
         
         if (currentToken.type != BEGIN) syntaxError("Expecting BEGIN");
         
+        if (currentToken.type == PERIOD) syntaxError("Expecting ;");
+        
         // The PROGRAM node adopts the COMPOUND tree.
         programNode.adopt(parseCompoundStatement());
         
-        if (currentToken.type == SEMICOLON) syntaxError("Expecting .");
+       // if (currentToken.type == SEMICOLON) syntaxError("Expecting .");
+        
+        
         return programNode;
     }
     
@@ -88,19 +92,25 @@ public class Parser
         statementStarters.add(BEGIN);
         statementStarters.add(IDENTIFIER);
         statementStarters.add(REPEAT);
+        statementStarters.add(DO);
         statementStarters.add(Token.TokenType.WRITE);
         statementStarters.add(Token.TokenType.WRITELN);
         statementStarters.add(Token.TokenType.CASE);
         
+        
         // Tokens that can immediately follow a statement.
         statementFollowers.add(SEMICOLON);
+        statementFollowers.add(PERIOD);
+        
         statementFollowers.add(END);
         statementFollowers.add(UNTIL);
         statementFollowers.add(END_OF_FILE);
         
         relationalOperators.add(EQUALS);
         relationalOperators.add(LESS_THAN);
-        
+        relationalOperators.add(GREATER_THAN);
+        relationalOperators.add(LESS_EQUALS);
+       
         simpleExpressionOperators.add(PLUS);
         simpleExpressionOperators.add(MINUS);
         
@@ -118,6 +128,7 @@ public class Parser
         {
             case IDENTIFIER : stmtNode = parseAssignmentStatement(); break;
             case BEGIN :      stmtNode = parseCompoundStatement();   break;
+            case WHILE :      stmtNode = parseWhileStatement();      break;         
             case REPEAT :     stmtNode = parseRepeatStatement();     break;
             case WRITE :      stmtNode = parseWriteStatement();      break;
             case WRITELN :    stmtNode = parseWritelnStatement();    break;
@@ -172,6 +183,11 @@ public class Parser
         if (currentToken.type == END) 
         {
             currentToken = scanner.nextToken();  // consume END
+            if (currentToken.type == SEMICOLON) 
+            {
+                currentToken = scanner.nextToken();  // consume SEMICOLON
+                parseStatementList(compoundNode, END); 
+            }
         }
         else syntaxError("Expecting END");
         
@@ -180,17 +196,19 @@ public class Parser
     
     private void parseStatementList(Node parentNode, Token.TokenType terminalType)
     {
+        
         while ((currentToken.type != terminalType) && (currentToken.type != END_OF_FILE))
         {
             Node stmtNode = parseStatement();
             if (stmtNode != null) parentNode.adopt(stmtNode);
-            
             // A semicolon separates statements.
+            
             if (currentToken.type == SEMICOLON)
             {
                 while (currentToken.type == SEMICOLON)
                 {
-                    currentToken = scanner.nextToken();  // consume ;
+                    currentToken = scanner.nextToken();  // consume ;                 
+                    lineNumber = currentToken.lineNumber;
                 }
             }
             else if (statementStarters.contains(currentToken.type))
@@ -198,8 +216,14 @@ public class Parser
                 syntaxError("Missing ;");
             }
         }
+        
+        
     }
 
+    
+    
+    
+    
     private Node parseRepeatStatement()
     {
         // The current token should now be REPEAT.
@@ -213,7 +237,7 @@ public class Parser
         if (currentToken.type == UNTIL) 
         {
             // Create a TEST node. It adopts the test expression node.
-            Node testNode = new Node(TEST);
+            Node testNode = new Node(TEST);       
             lineNumber = currentToken.lineNumber;
             testNode.lineNumber = lineNumber;
             currentToken = scanner.nextToken();  // consume UNTIL
@@ -227,6 +251,69 @@ public class Parser
         
         return loopNode;
     }
+    
+   
+    
+    
+    
+    
+    
+    
+    //-----------------------------------------------------
+    
+    
+    private Node parseWhileStatement()
+    {
+        // The current token should now be while.
+        
+        // Create a LOOP node.
+        Node loopNode = new Node(LOOP);
+ 
+        
+        if (currentToken.type == WHILE) 
+        {
+            currentToken = scanner.nextToken();  // consume WHILE
+            Node testNode = new Node(TEST);
+          //  Node NotNode = new Node(NOT);
+            lineNumber = currentToken.lineNumber;
+            testNode.lineNumber = lineNumber;
+            // Create a TEST node. It adopts the test expression node.               
+            testNode.adopt(parseExpression());
+            // The LOOP node adopts the TEST node as its final child.
+            loopNode.adopt(testNode);
+        }
+            if (currentToken.type == DO) 
+            {
+                currentToken = scanner.nextToken();  // consume DO    
+                lineNumber = currentToken.lineNumber;
+               
+            }
+            else syntaxError("Expecting DO");
+            
+            if (currentToken.type == BEGIN) 
+            {    
+                currentToken = scanner.nextToken();  // consume BEGIN
+                lineNumber = currentToken.lineNumber;
+               
+            }
+
+            parseStatementList(loopNode, END); 
+            
+  
+          
+        
+          
+        return loopNode;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     private Node parseWriteStatement()
     {
@@ -334,6 +421,7 @@ public class Parser
             Token.TokenType tokenType = currentToken.type;
             Node opNode = tokenType == EQUALS    ? new Node(EQ)
                         : tokenType == LESS_THAN ? new Node(LT)
+                        : tokenType == GREATER_THAN ? new Node(GT)                 
                         :                          null;
             
             currentToken = scanner.nextToken();  // consume relational operator
@@ -409,7 +497,7 @@ public class Parser
     private Node parseFactor()
     {   
         // The current token should now be an identifier or a number or (
-        
+       
         if      (currentToken.type == IDENTIFIER) return parseVariable();
         else if (currentToken.type == INTEGER)    return parseIntegerConstant();
         else if (currentToken.type == REAL)       return parseRealConstant();

@@ -34,6 +34,7 @@ public class Executor
         
         relationals.add(EQ);
         relationals.add(LT);
+        relationals.add(GT);
     }
     
     public Executor(Symtab symtab)
@@ -55,6 +56,7 @@ public class Executor
             case CASE:      return visitStatement(node);
             
             case TEST:      return visitTest(node);
+
             
             default :       return visitExpression(node);
         }
@@ -105,6 +107,9 @@ public class Executor
         return null;
     }
     
+    
+    
+    
     private Object visitLoop(Node loopNode)
     {        
         boolean b = false;
@@ -114,9 +119,11 @@ public class Executor
             {
                 Object value = visit(node);  // statement or test
                 
+             
                 // Evaluate the test condition. Stop looping if true.
-                b = (node.type == TEST) && ((boolean) value);
-                if (b) break;
+                b = (node.type == TEST) && !((boolean) value);             
+                if (b) 
+                    break;
             }
         } while (!b);
         
@@ -127,6 +134,7 @@ public class Executor
     {
         return (Boolean) visit(testNode.children.get(0));
     }
+
     
     private Object visitWrite(Node writeNode)
     {
@@ -208,12 +216,11 @@ public class Executor
         if (relationals.contains(expressionNode.type))
         {
             boolean value = false;
-            
             switch (expressionNode.type)
             {
                 case EQ : value = value1 == value2; break;
                 case LT : value = value1 <  value2; break;
-                
+                case GT : value = value1 >  value2; break;
                 default : break;
             }
             
