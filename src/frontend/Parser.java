@@ -63,12 +63,10 @@ public class Parser
         
         if (currentToken.type != BEGIN) syntaxError("Expecting BEGIN");
         
-        if (currentToken.type == PERIOD) syntaxError("Expecting ;");
-        
         // The PROGRAM node adopts the COMPOUND tree.
         programNode.adopt(parseCompoundStatement());
         
-       // if (currentToken.type == SEMICOLON) syntaxError("Expecting .");
+        if (currentToken.type != PERIOD) syntaxError("Expecting .");
         
         
         return programNode;
@@ -183,11 +181,6 @@ public class Parser
         if (currentToken.type == END) 
         {
             currentToken = scanner.nextToken();  // consume END
-            if (currentToken.type == SEMICOLON) 
-            {
-                currentToken = scanner.nextToken();  // consume SEMICOLON
-                parseStatementList(compoundNode, END); 
-            }
         }
         else syntaxError("Expecting END");
         
@@ -290,19 +283,8 @@ public class Parser
             }
             else syntaxError("Expecting DO");
             
-            if (currentToken.type == BEGIN) 
-            {    
-                currentToken = scanner.nextToken();  // consume BEGIN
-                lineNumber = currentToken.lineNumber;
-               
-            }
-
-            parseStatementList(loopNode, END); 
+            loopNode.adopt(parseStatement());
             
-  
-          
-        
-          
         return loopNode;
     }
     
