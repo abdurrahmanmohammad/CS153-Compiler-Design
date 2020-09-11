@@ -213,10 +213,6 @@ public class Parser
         
     }
 
-    
-    
-    
-    
     private Node parseRepeatStatement()
     {
         // The current token should now be REPEAT.
@@ -244,13 +240,6 @@ public class Parser
         
         return loopNode;
     }
-    
-   
-    
-    
-    
-    
-    
     
     //-----------------------------------------------------
     
@@ -287,15 +276,6 @@ public class Parser
             
         return loopNode;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     private Node parseWriteStatement()
     {
@@ -424,10 +404,26 @@ public class Parser
     
     private Node parseSimpleExpression()
     {
-        // The current token should now be an identifier or a number.
+        // The current token should now be an identifier, number or a + or - token (unary operators).
         
         // The simple expression's root node.
-        Node simpExprNode = parseTerm();
+        Node simpExprNode = null;
+        
+        switch(currentToken.type)
+        {
+            case PLUS: 
+                simpExprNode = new Node(POSITIVE);
+                currentToken = scanner.nextToken(); //consume + token
+                simpExprNode.adopt(parseTerm()); //adopt the term that follows the + token
+                break;
+            case MINUS:          
+                simpExprNode = new Node(NEGATIVE);
+                currentToken = scanner.nextToken(); //consume - token
+                simpExprNode.adopt(parseTerm()); //adopt the term that follows the - token
+                break;
+            
+            default: simpExprNode = parseTerm(); //if there isn't a + or - unary operator, just parse the term.
+        }
         
         // Keep parsing more terms as long as the current token
         // is a + or - operator.
@@ -650,35 +646,39 @@ public class Parser
     {
         Node constantNode = new Node(Node.NodeType.CONSTANT);
         
-        if(currentToken.type == STRING)
-            constantNode.adopt(parseStringConstant());
-        
-        else if(currentToken.type == CHARACTER)
-            constantNode.adopt(parseCharacterConstant());
-        
-        else //if it isn't a string or a character, it could be id, integer, or real which may have a +, a -, or nothing before it. 
+        switch(currentToken.type)
         {
-            if(currentToken.type == PLUS) //a + symbol before an identifier or number
-                currentToken = scanner.nextToken(); //just consume it because it doesn't effect the value of the constant
+            case STRING: constantNode.adopt(parseStringConstant()); break; 
+            case CHARACTER: constantNode.adopt(parseCharacterConstant()); break;
             
-            else if(currentToken.type == MINUS) //a - symbol before an identifier or number
+            default: //neither a STRING nor CHARACTER
             {
-                constantNode.adopt(new Node(NEGATIVE)); //add a unary negative operator to the Constant node
-                currentToken = scanner.nextToken(); //consume the - symbol
-            }
-            
-            if(currentToken.type == IDENTIFIER)
-                constantNode.adopt(parseVariable());
+                Node adopter = constantNode; //adopterNode is the constantNode by default.
+                
+                if(currentToken.type == PLUS)
+                {
+                    adopter = new Node(POSITIVE); //change the adopter node to a + Node
+                    constantNode.adopt(adopter);
+                    currentToken = scanner.nextToken(); //consume the + token
+                }
+                else if(currentToken.type == MINUS)
+                {
+                    adopter = new Node(NEGATIVE); //change the adopter node to a - Node
+                    constantNode.adopt(adopter);
+                    currentToken = scanner.nextToken(); //consume the - token
+                }
 
-            else if(currentToken.type == INTEGER)
-                constantNode.adopt(parseIntegerConstant());
-            
-            else if(currentToken.type == REAL)
-                constantNode.adopt(parseRealConstant());
-            
-            else //if it isn't any of the above
-                syntaxError("Expecting Constant (STRING, CHARACTER, IDENTIFIER, INTEGER, or REAL)");
+                switch(currentToken.type) //adopter node adopts a VARIABLE, INTEGER, or REAL node, or it throws an error
+                {
+                    case IDENTIFIER: adopter.adopt(parseVariable()); break;
+                    case INTEGER: adopter.adopt(parseIntegerConstant()); break;
+                    case REAL: adopter.adopt(parseRealConstant()); break;
+                
+                    default: syntaxError("Expecting Constant (STRING, CHARACTER, IDENTIFIER, INTEGER, or REAL)");
+                }
+            }
         }
+        
         
     	return constantNode;
     }

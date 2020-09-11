@@ -31,6 +31,8 @@ public class Executor
         singletons.add(REAL_CONSTANT);
         singletons.add(STRING_CONSTANT);
         singletons.add(CHARACTER_CONSTANT);
+        singletons.add(POSITIVE);
+        singletons.add(NEGATIVE);
         
         relationals.add(EQ);
         relationals.add(LT);
@@ -203,6 +205,8 @@ public class Executor
                 case REAL_CONSTANT    : return visitRealConstant(expressionNode);
                 case STRING_CONSTANT  : return visitStringConstant(expressionNode);
                 case CHARACTER_CONSTANT: return visitCharacterConstant(expressionNode);
+                case POSITIVE         : return visitUnaryPositive(expressionNode);
+                case NEGATIVE         : return visitUnaryNegative(expressionNode);
                 
                 default: return null;
             }
@@ -294,6 +298,16 @@ public class Executor
         return (Character) characterConstantNode.value;
     }
     
+    private Object visitUnaryPositive(Node expressionNode)
+    {
+        return visitExpression(expressionNode.children.get(0)); //first child of POSITIVE node is the expression
+    }
+    
+    private Object visitUnaryNegative(Node expressionNode)
+    {
+        return -1 * (Double) visitExpression(expressionNode.children.get(0)); //first child of NEGATIVE node is the expression
+    }
+    
     private Object visitCase(Node node)
     {
         Node exp = node.children.get(0);
@@ -332,19 +346,8 @@ public class Executor
             case INTEGER_CONSTANT:   return visitIntegerConstant(child0);
             case REAL_CONSTANT:      return visitRealConstant(child0);
             case VARIABLE:           return visitVariable(child0);
-            case POSITIVE:
-            case NEGATIVE: {
-                
-                int sign = (child0.type == POSITIVE)? 1: -1; //+1 if there was a + token, -1 if it there was a - token
-                Node child1 = node.children.get(1);
-                
-                switch(child1.type)
-                {
-                    case INTEGER_CONSTANT:   return sign * (Integer) visitIntegerConstant(child0);
-                    case REAL_CONSTANT:      return sign * (Double) visitRealConstant(child0);
-                    case VARIABLE:           return sign * (Double) visitVariable(child0);
-                }
-            }
+            case POSITIVE:           return visitUnaryPositive(child0);
+            case NEGATIVE:           return visitUnaryNegative(child0);
                 
             default: return null;
         }
