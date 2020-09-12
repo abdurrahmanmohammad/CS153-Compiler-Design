@@ -94,7 +94,7 @@ public class Parser
         statementStarters.add(Token.TokenType.WRITE);
         statementStarters.add(Token.TokenType.WRITELN);
         statementStarters.add(Token.TokenType.CASE);
-        
+        statementStarters.add(Token.TokenType.IF);
         
         // Tokens that can immediately follow a statement.
         statementFollowers.add(SEMICOLON);
@@ -105,9 +105,11 @@ public class Parser
         statementFollowers.add(END_OF_FILE);
         
         relationalOperators.add(EQUALS);
+        relationalOperators.add(NOT_EQUALS);
         relationalOperators.add(LESS_THAN);
         relationalOperators.add(GREATER_THAN);
         relationalOperators.add(LESS_EQUALS);
+        relationalOperators.add(GREATER_EQUALS);
        
         simpleExpressionOperators.add(PLUS);
         simpleExpressionOperators.add(MINUS);
@@ -131,6 +133,7 @@ public class Parser
             case WRITE :      stmtNode = parseWriteStatement();      break;
             case WRITELN :    stmtNode = parseWritelnStatement();    break;
             case CASE  :      stmtNode = parseCaseStatement();       break;
+            case IF    :      stmtNode = parseIfStatement();         break;
             case SEMICOLON :  stmtNode = null; break;  // empty statement
             
             default : syntaxError("Unexpected token");
@@ -251,16 +254,16 @@ public class Parser
         // Create a LOOP node.
         Node loopNode = new Node(LOOP);
  
-        
         if (currentToken.type == WHILE) 
         {
             currentToken = scanner.nextToken();  // consume WHILE
             Node testNode = new Node(TEST);
-          //  Node NotNode = new Node(NOT);
+            Node notNode = new Node(Node.NodeType.NOT);
             lineNumber = currentToken.lineNumber;
             testNode.lineNumber = lineNumber;
-            // Create a TEST node. It adopts the test expression node.               
-            testNode.adopt(parseExpression());
+            // Create a TEST node. It adopts the NOT node which adopts the expression node.             
+            testNode.adopt(notNode);
+            notNode.adopt(parseExpression());
             // The LOOP node adopts the TEST node as its final child.
             loopNode.adopt(testNode);
         }
@@ -382,8 +385,11 @@ public class Parser
         {
             Token.TokenType tokenType = currentToken.type;
             Node opNode = tokenType == EQUALS    ? new Node(EQ)
+                        : tokenType == NOT_EQUALS? new Node(NE)
                         : tokenType == LESS_THAN ? new Node(LT)
-                        : tokenType == GREATER_THAN ? new Node(GT)                 
+                        : tokenType == GREATER_THAN ? new Node(GT)
+                        : tokenType == LESS_EQUALS ? new Node(LE)
+                        : tokenType == GREATER_EQUALS? new Node(GE)
                         :                          null;
             
             currentToken = scanner.nextToken();  // consume relational operator
@@ -494,6 +500,16 @@ public class Parser
             return exprNode;
         }
         
+        else if (currentToken.type == Token.TokenType.NOT)
+        {
+            Node notNode = new Node(Node.NodeType.NOT);
+            currentToken = scanner.nextToken(); //consume the NOT
+            
+            notNode.adopt(parseFactor()); //per the PASCAL syntax diagram, a factor follows a NODE
+            
+            return notNode;
+        }
+        
         else syntaxError("Unexpected token");
         return null;
     }
@@ -581,6 +597,31 @@ public class Parser
         return charNode;
     }
 
+    private Node parseIfStatement()
+    {
+        Node ifNode = new Node(Node.NodeType.IF);
+        ifNode.lineNumber = currentToken.lineNumber;
+        currentToken = scanner.nextToken(); //consume IF token
+        
+        ifNode.adopt(parseExpression()); //parses the expression after the IF statement
+        
+        if(currentToken.type == THEN)
+        {
+            currentToken = scanner.nextToken(); //consumes the THEN token
+            ifNode.adopt(parseStatement()); //parses the statement that follows the THEN token
+        }
+        else 
+            syntaxError("Expecting THEN");
+        
+        if(currentToken.type == Token.TokenType.ELSE) //if there is an ELSE token after the statement
+        {
+            currentToken = scanner.nextToken(); //consumes the ELSE token
+            ifNode.adopt(parseStatement()); //parses the statement that follows the ELSE token
+        }
+        
+        return ifNode;
+    }
+    
     private Node parseCaseStatement()
     {
         Node caseNode = new Node(Node.NodeType.CASE);

@@ -33,10 +33,14 @@ public class Executor
         singletons.add(CHARACTER_CONSTANT);
         singletons.add(POSITIVE);
         singletons.add(NEGATIVE);
+        singletons.add(Node.NodeType.NOT);
         
         relationals.add(EQ);
+        relationals.add(NE);
         relationals.add(LT);
         relationals.add(GT);
+        relationals.add(LE);
+        relationals.add(GE);
     }
     
     public Executor(Symtab symtab)
@@ -54,8 +58,9 @@ public class Executor
             case ASSIGN :   
             case LOOP : 
             case WRITE :
-            case WRITELN :  
-            case CASE:      return visitStatement(node);
+            case WRITELN :
+            case IF :
+            case CASE :      return visitStatement(node);
             
             case TEST:      return visitTest(node);
 
@@ -81,6 +86,7 @@ public class Executor
             case LOOP :      return visitLoop(statementNode);
             case WRITE :     return visitWrite(statementNode);
             case WRITELN :   return visitWriteln(statementNode);
+            case IF :        return visitIf(statementNode);
             case CASE  :     return visitCase(statementNode);
             default :        return null;
         }
@@ -123,7 +129,7 @@ public class Executor
                 
              
                 // Evaluate the test condition. Stop looping if true.
-                b = (node.type == TEST) && !((boolean) value);             
+                b = (node.type == TEST) && ((boolean) value);             
                 if (b) 
                     break;
             }
@@ -207,6 +213,7 @@ public class Executor
                 case CHARACTER_CONSTANT: return visitCharacterConstant(expressionNode);
                 case POSITIVE         : return visitUnaryPositive(expressionNode);
                 case NEGATIVE         : return visitUnaryNegative(expressionNode);
+                case NOT              : return visitUnaryNot(expressionNode);
                 
                 default: return null;
             }
@@ -223,8 +230,11 @@ public class Executor
             switch (expressionNode.type)
             {
                 case EQ : value = value1 == value2; break;
+                case NE : value = value1 != value2; break;
                 case LT : value = value1 <  value2; break;
                 case GT : value = value1 >  value2; break;
+                case LE : value = value1 <=  value2; break;
+                case GE : value = value1 >=  value2; break;
                 default : break;
             }
             
@@ -306,6 +316,28 @@ public class Executor
     private Object visitUnaryNegative(Node expressionNode)
     {
         return -1 * (Double) visitExpression(expressionNode.children.get(0)); //first child of NEGATIVE node is the expression
+    }
+    
+    private Object visitUnaryNot(Node expressionNode)
+    {
+        return ! (Boolean) visitExpression(expressionNode.children.get(0)); //first child of NOT node is the expression
+    }
+    
+    private Object visitIf(Node node)
+    {
+        Node conditionNode = node.children.get(0); //the first child is the condition for the IF statement
+        Boolean condition = (Boolean) visitExpression(conditionNode);
+        
+        if(condition) //if the condition is true, execute the second child, which contains the statement after the THEN
+        {
+            visitStatement(node.children.get(1)); 
+        }
+        else if(node.children.size() == 3) //if there are 3 children, then there is an ELSE token. Execute the ELSE statement only if the IF condition isn't true
+        {
+            visitStatement(node.children.get(2));
+        }
+        
+        return null;
     }
     
     private Object visitCase(Node node)
