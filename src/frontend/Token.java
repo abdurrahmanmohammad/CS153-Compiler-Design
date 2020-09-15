@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class Token {
 	// Assignment 2: Added additional reserved word starting from DIV to OF
 	public enum TokenType {
-		PROGRAM, BEGIN, END, REPEAT, UNTIL, WRITE, WRITELN, PERIOD, COLON, COLON_EQUALS, SEMICOLON, PLUS, MINUS, STAR,
+		PROGRAM, BEGIN, END, REPEAT, UNTIL, WRITE, WRITELN, PERIOD, COLON, COLON_EQUALS, SEMICOLON, PLUS, MINUS, STAR, 
 		SLASH, LPAREN, RPAREN, EQUALS, LESS_THAN, IDENTIFIER, INTEGER, REAL, STRING, END_OF_FILE, ERROR, DIV, MOD, AND,
 		OR, NOT, CONST, TYPE, VAR, PROCEDURE, FUNCTION, WHILE, DO, FOR, TO, DOWNTO, IF, THEN, ELSE, CASE, OF, CHARACTER,
 		COMMA, NOT_EQUALS, LESS_EQUALS, GREATER_EQUALS, GREATER_THAN, LBRACKET, RBRACKET, CARAT, DOT_DOT
@@ -252,32 +252,7 @@ public class Token {
 				return token; // already consumed <
 			}
 			break;
-		}
-		case 'd': {
-            char nextChar = source.nextChar();
-
-            if (nextChar == 'i') { // Symbol: <=
-                token.text += nextChar;
-            } 
-            if (nextChar == 'v') { // Symbol: <=
-                token.text += nextChar;
-                token.type = TokenType.DIV;
-            }
-            break;
-        }
-		case 'D': {
-            char nextChar = source.nextChar();
-
-            if (nextChar == 'I') { // Symbol: <=
-                token.text += nextChar;
-            } 
-            if (nextChar == 'V') { // Symbol: <=
-                token.text += nextChar;
-                token.type = TokenType.DIV;
-            }
-            break;
-        }
-		
+		}	
 		case '(':
 			token.type = TokenType.LPAREN;
 			break;

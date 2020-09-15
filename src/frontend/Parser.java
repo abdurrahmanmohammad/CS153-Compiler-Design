@@ -114,12 +114,12 @@ public class Parser
        
         simpleExpressionOperators.add(PLUS);
         simpleExpressionOperators.add(MINUS);
-        simpleExpressionOperators.add(Token.TokenType.DIV);
-
 
         
         termOperators.add(STAR);
         termOperators.add(SLASH);
+        termOperators.add(Token.TokenType.DIV);
+        termOperators.add(Token.TokenType.MOD);
     }
     
     private Node parseStatement()
@@ -394,7 +394,6 @@ public class Parser
                         : tokenType == GREATER_THAN ? new Node(GT)
                         : tokenType == LESS_EQUALS ? new Node(LE)
                         : tokenType == GREATER_EQUALS? new Node(GE)
-                        : tokenType == currentToken.type.DIV? new Node(Node.NodeType.DIV)
                         :                          null;
             
             currentToken = scanner.nextToken();  // consume relational operator
@@ -467,12 +466,14 @@ public class Parser
         // is a * or / operator.
         while (termOperators.contains(currentToken.type))
         {
-            Node opNode = currentToken.type == STAR ? new Node(MULTIPLY)                  
-                                                    : new Node(DIVIDE);
+            Node opNode = currentToken.type == STAR                 ? new Node(MULTIPLY) //current token is a *       
+                        : currentToken.type == SLASH                ? new Node(DIVIDE)   //current token is a /
+                        : currentToken.type == Token.TokenType.DIV  ? new Node(Node.NodeType.DIV)  //current token is DIV
+                        :                                             new Node(Node.NodeType.MOD); //current token is MOD (by default)
             
             currentToken = scanner.nextToken();  // consume the operator
 
-            // The multiply or dive node adopts the first factor node as its
+            // The operation node adopts the first factor node as its
             // as its first child and the next factor node as its second child. 
             // Then it becomes the term's root node.
             opNode.adopt(termNode);

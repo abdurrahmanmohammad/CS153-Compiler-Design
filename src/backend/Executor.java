@@ -251,9 +251,21 @@ public class Executor
             case MULTIPLY : value = value1 * value2; break;
           
                 
-            case DIVIDE :
+            case DIVIDE : //DIVIDE is real number division (returns a real number)
             {
                 if (value2 != 0.0) value = value1/value2;
+                else
+                {
+                    runtimeError(expressionNode, "Division by zero");
+                    return 0.0;
+                }
+
+                break;
+            }
+            case DIV : //DIV is Integer division (due to our cheat, it still uses doubles, but it returns an integer-like number)
+            {
+                if (value2 != 0.0) 
+                        value = Math.floor(value1/value2); //per Pascal specs, DIV returns the floor of the division between value1 and value2
                 else
                 {
                     runtimeError(expressionNode, "Division by zero");
@@ -262,17 +274,8 @@ public class Executor
                 
                 break;
             }
-            case DIV :
-            {
-                if (value2 != 0.0) value = value1/value2;
-                else
-                {
-                    runtimeError(expressionNode, "Division by zero");
-                    return 0.0;
-                }
-                
-                break;
-            }
+            
+            case MOD : value = value1 % value2; break;
             default : break;
         }
         
