@@ -110,9 +110,13 @@ public class Parser
         relationalOperators.add(GREATER_THAN);
         relationalOperators.add(LESS_EQUALS);
         relationalOperators.add(GREATER_EQUALS);
+        
        
         simpleExpressionOperators.add(PLUS);
         simpleExpressionOperators.add(MINUS);
+        simpleExpressionOperators.add(Token.TokenType.DIV);
+
+
         
         termOperators.add(STAR);
         termOperators.add(SLASH);
@@ -390,6 +394,7 @@ public class Parser
                         : tokenType == GREATER_THAN ? new Node(GT)
                         : tokenType == LESS_EQUALS ? new Node(LE)
                         : tokenType == GREATER_EQUALS? new Node(GE)
+                        : tokenType == currentToken.type.DIV? new Node(Node.NodeType.DIV)
                         :                          null;
             
             currentToken = scanner.nextToken();  // consume relational operator
@@ -462,7 +467,7 @@ public class Parser
         // is a * or / operator.
         while (termOperators.contains(currentToken.type))
         {
-            Node opNode = currentToken.type == STAR ? new Node(MULTIPLY)
+            Node opNode = currentToken.type == STAR ? new Node(MULTIPLY)                  
                                                     : new Node(DIVIDE);
             
             currentToken = scanner.nextToken();  // consume the operator

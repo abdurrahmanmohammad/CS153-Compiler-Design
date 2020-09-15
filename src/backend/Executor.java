@@ -249,6 +249,7 @@ public class Executor
             case ADD :      value = value1 + value2; break;
             case SUBTRACT : value = value1 - value2; break;
             case MULTIPLY : value = value1 * value2; break;
+          
                 
             case DIVIDE :
             {
@@ -261,7 +262,17 @@ public class Executor
                 
                 break;
             }
-            
+            case DIV :
+            {
+                if (value2 != 0.0) value = value1/value2;
+                else
+                {
+                    runtimeError(expressionNode, "Division by zero");
+                    return 0.0;
+                }
+                
+                break;
+            }
             default : break;
         }
         

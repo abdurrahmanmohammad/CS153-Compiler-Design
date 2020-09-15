@@ -253,6 +253,31 @@ public class Token {
 			}
 			break;
 		}
+		case 'd': {
+            char nextChar = source.nextChar();
+
+            if (nextChar == 'i') { // Symbol: <=
+                token.text += nextChar;
+            } 
+            if (nextChar == 'v') { // Symbol: <=
+                token.text += nextChar;
+                token.type = TokenType.DIV;
+            }
+            break;
+        }
+		case 'D': {
+            char nextChar = source.nextChar();
+
+            if (nextChar == 'I') { // Symbol: <=
+                token.text += nextChar;
+            } 
+            if (nextChar == 'V') { // Symbol: <=
+                token.text += nextChar;
+                token.type = TokenType.DIV;
+            }
+            break;
+        }
+		
 		case '(':
 			token.type = TokenType.LPAREN;
 			break;
