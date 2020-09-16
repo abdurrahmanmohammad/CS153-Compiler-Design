@@ -754,6 +754,8 @@ public class Parser
         
         if(currentToken.type == SEMICOLON)
             currentToken = scanner.nextToken(); //Consume ; token
+        else if(currentToken.type == END) 
+            return caseBranchNode; //the last branch doesn't need to be ended with a semicolon, so the next token would just be END
         else
             syntaxError("Expecting ;");
         
