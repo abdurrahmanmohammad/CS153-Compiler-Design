@@ -114,12 +114,14 @@ public class Parser
        
         simpleExpressionOperators.add(PLUS);
         simpleExpressionOperators.add(MINUS);
+        simpleExpressionOperators.add(Token.TokenType.OR);
 
         
         termOperators.add(STAR);
         termOperators.add(SLASH);
         termOperators.add(Token.TokenType.DIV);
         termOperators.add(Token.TokenType.MOD);
+        termOperators.add(Token.TokenType.AND);
     }
     
     private Node parseStatement()
@@ -439,8 +441,9 @@ public class Parser
         // is a + or - operator.
         while (simpleExpressionOperators.contains(currentToken.type))
         {
-            Node opNode = currentToken.type == PLUS ? new Node(ADD)
-                                                    : new Node(SUBTRACT);
+            Node opNode = currentToken.type == Token.TokenType.OR ? new Node(Node.NodeType.OR)
+            			: currentToken.type == PLUS ? new Node(ADD)
+                        : new Node(SUBTRACT);
             
             currentToken = scanner.nextToken();  // consume the operator
 
@@ -469,6 +472,7 @@ public class Parser
             Node opNode = currentToken.type == STAR                 ? new Node(MULTIPLY) //current token is a *       
                         : currentToken.type == SLASH                ? new Node(DIVIDE)   //current token is a /
                         : currentToken.type == Token.TokenType.DIV  ? new Node(Node.NodeType.DIV)  //current token is DIV
+                        : currentToken.type == Token.TokenType.AND  ? new Node(Node.NodeType.AND)  //current token is AND
                         :                                             new Node(Node.NodeType.MOD); //current token is MOD (by default)
             
             currentToken = scanner.nextToken();  // consume the operator
