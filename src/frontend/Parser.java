@@ -135,7 +135,8 @@ public class Parser
         {
             case IDENTIFIER : stmtNode = parseAssignmentStatement(); break;
             case BEGIN :      stmtNode = parseCompoundStatement();   break;
-            case WHILE :      stmtNode = parseWhileStatement();      break;         
+            case WHILE :      stmtNode = parseWhileStatement();      break;  
+            case FOR :      stmtNode = parseForStatement();      break;
             case REPEAT :     stmtNode = parseRepeatStatement();     break;
             case WRITE :      stmtNode = parseWriteStatement();      break;
             case WRITELN :    stmtNode = parseWritelnStatement();    break;
@@ -253,6 +254,85 @@ public class Parser
     
     //-----------------------------------------------------
     
+    private Node parseForStatement()
+    {
+        // The current token should now be FOR.
+    	currentToken = scanner.nextToken(); // consume FOR (FOR ensured by caller function)
+    	
+    	// Create a COMPOUND node. (COMPOUND = ASSIGN + LOOP)
+    	Node compoundNode = new Node(COMPOUND);
+    	
+    	// Parse assignment statement 
+    	Node assign = parseAssignmentStatement(); // Create ASSIGN node to store assignment statement: i := 0
+    	Node loopVar = assign.children.get(0); // Extract loop variable for later use
+    	compoundNode.adopt(assign); // Add ASSIGN node to COMPOUND node
+    	
+        // Create a LOOP node. (LOOP = TEST + statement(s) + ASSIGN)
+        Node loopNode = new Node(LOOP);
+        
+        // Parse test condition: TEST node adopts the GT node for TO and LT node for DOWNTO.
+        Node testNode = new Node(TEST); // Create TEST node
+        // Get next token (Should be TO or DOWNTO)
+        Token.TokenType loopType = null; // Stores the token of the FOR loop type
+        Node operator = null; // Stores the operator associated with TO (GT) and DOWNTO (LT)
+    	// Determine if the for loop is of type TO or DOWNTO
+    	if(currentToken.type == TO) {
+    		loopType = TO;
+    		operator = new Node(GT);
+    	} else if(currentToken.type == DOWNTO) {
+    		loopType = DOWNTO;
+    		operator = new Node(LT);
+    	} else {
+    		syntaxError("Expecting TO or DOWNTO"); // If not TO or DOWNTO, invalid token
+    		loopType = null;
+    		if(currentToken.type != DO)
+    			scanner.nextToken(); // Skip the next token (token after TO or DOWNTO but before DO) 
+    	}
+    	currentToken = scanner.nextToken(); // Consume TO or DOWNTO
+        
+    	// Parse and store test expression: GT or LT
+    	if(loopType != null) {
+        	operator.adopt(loopVar); // Reuse variable
+            operator.adopt(parseIntegerConstant()); // Parse integer constant
+            testNode.adopt(operator); // Add GT or LT test to TEST
+    	}
+
+        
+        lineNumber = currentToken.lineNumber; // Retrieve line number
+        testNode.lineNumber = lineNumber; // Set line number for TEST node
+        loopNode.adopt(testNode); // Add TEST node to LOOP node
+    	
+        // Consume DO
+        if(currentToken.type == DO) currentToken = scanner.nextToken();
+        else syntaxError("Expecting DO"); // If not DO, invalid token
+        
+        // Parse statements
+        if(currentToken.type == BEGIN) { // If loop has a block of statements
+        	currentToken = scanner.nextToken(); // consume BEGIN
+        	parseStatementList(loopNode, END); // Consume statements in block
+        	currentToken = scanner.nextToken(); // Consume END
+        } else loopNode.adopt(parseStatement()); // If loop is a single statement
+        
+        // Increment or decrement loop counter: i := i + 1
+        Node postAssign = new Node(ASSIGN); // Create ASSIGN node for loop counter
+        postAssign.adopt(loopVar); // Store the loop variable: i := i + 1
+        // TO: add and DOWNTO: subtract
+        Node increment = loopType == TO ? new Node(ADD)
+        				: new Node(SUBTRACT);
+        increment.adopt(loopVar); // The i in i + 1
+        // Store a one to increment or decrement by 1
+        Node integerNode = new Node(INTEGER_CONSTANT);
+        integerNode.value = 1L; // Store 1 as a long since we use long to process values
+        increment.adopt(integerNode); // Add this 1 to the ADD or SUBTRACT node
+        
+        postAssign.adopt(increment); // Add ADD or SUBTRACT node to LOOP node
+        loopNode.adopt(postAssign); // Add ADD or SUBTRACT node to LOOP node
+        
+        
+        compoundNode.adopt(loopNode);
+        
+        return compoundNode;
+    }
     
     private Node parseWhileStatement()
     {
