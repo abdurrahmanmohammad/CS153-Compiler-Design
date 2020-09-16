@@ -219,6 +219,17 @@ public class Executor
             }
         }
         
+         // Boolean expressions: AND and OR
+        if(expressionNode.type == OR) {
+        	boolean bool1 = (Boolean) visit(expressionNode.children.get(0));
+        	boolean bool2 = (Boolean) visit(expressionNode.children.get(0));
+        	return bool1 || bool2;
+        } else if(expressionNode.type == AND) {
+        	boolean bool1 = (Boolean) visit(expressionNode.children.get(0));
+        	boolean bool2 = (Boolean) visit(expressionNode.children.get(0));
+        	return bool1 && bool2;
+        }
+        
         // Binary expressions.
         double value1 = (Double) visit(expressionNode.children.get(0));
         double value2 = (Double) visit(expressionNode.children.get(1));
