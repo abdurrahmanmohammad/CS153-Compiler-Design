@@ -96,6 +96,7 @@ public class Parser
         statementStarters.add(Token.TokenType.CASE);
         statementStarters.add(Token.TokenType.IF);
         statementStarters.add(Token.TokenType.WHILE);
+        statementStarters.add(Token.TokenType.FOR);
         
         // Tokens that can immediately follow a statement.
         statementFollowers.add(SEMICOLON);
@@ -716,7 +717,8 @@ public class Parser
     private Node parseCaseStatement()
     {
         Node caseNode = new Node(Node.NodeType.CASE);
-        caseNode.lineNumber = currentToken.lineNumber;
+        lineNumber = currentToken.lineNumber;
+        caseNode.lineNumber = lineNumber;
         currentToken = scanner.nextToken(); //Consume CASE token.
         
         caseNode.adopt(parseExpression()); //Adopts an expression node as first child node
@@ -739,7 +741,8 @@ public class Parser
     private Node parseCaseBranch()
     {
         Node caseBranchNode = new Node(Node.NodeType.CASE_BRANCH);
-        caseBranchNode.lineNumber = currentToken.lineNumber;
+        lineNumber = currentToken.lineNumber;
+        caseBranchNode.lineNumber = lineNumber;
         caseBranchNode.adopt(parseConstantList()); //Adopts a constant list node as the first node
         
         if(currentToken.type == COLON)
@@ -765,7 +768,8 @@ public class Parser
     private Node parseConstantList()
     {
         Node constantListNode = new Node(Node.NodeType.CONSTANT_LIST);
-        constantListNode.lineNumber = currentToken.lineNumber;
+        lineNumber = currentToken.lineNumber;
+        constantListNode.lineNumber = lineNumber;
         constantListNode.adopt(parseConstant()); //Adopts a single constant node as the first child
         
         while(currentToken.type == COMMA)
@@ -780,7 +784,8 @@ public class Parser
     private Node parseConstant()
     {
         Node constantNode = new Node(Node.NodeType.CONSTANT);
-        constantNode.lineNumber = currentToken.lineNumber;
+        lineNumber = currentToken.lineNumber;
+        constantNode.lineNumber = lineNumber;
         switch(currentToken.type)
         {
             case STRING: constantNode.adopt(parseStringConstant()); break; 
