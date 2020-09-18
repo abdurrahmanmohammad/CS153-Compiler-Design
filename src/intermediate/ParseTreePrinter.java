@@ -43,6 +43,7 @@ public class ParseTreePrinter
         else if (node.type == INTEGER_CONSTANT) line.append(" " + (long) node.value);
         else if (node.type == REAL_CONSTANT)    line.append(" " + node.value);
         else if (node.type == STRING_CONSTANT)  line.append(" '" + (String) node.value + "'");
+        else if (node.type == CHARACTER_CONSTANT) line.append(" '" + node.value + "'" );
         if (node.lineNumber > 0)                line.append(" line " + node.lineNumber);
 
         // Print the node's children followed by the closing tag.

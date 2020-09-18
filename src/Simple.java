@@ -106,7 +106,7 @@ public class Simple
             Executor executor = new Executor(symtab);
             executor.visit(programNode);
         }
-        else
+        else 
         {
             System.out.println();
             System.out.println("There were " + errorCount + " errors.");
