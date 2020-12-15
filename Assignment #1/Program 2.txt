@@ -1,0 +1,85 @@
+PROGRAM  MergeTwoArrays(input, output);
+
+CONST
+    MAX_INPUT = 20; {Each array should be large enough to hold up to 20 values}
+    MAX_OUTPUT = MAX_INPUT * 2; {The third array should be large enough to hold up to 40 values}
+TYPE
+    InputArr = ARRAY[0..MAX_INPUT] OF integer; {Array of 20 integers starting from arr[1] to arr[20] - arr[0] is the size}
+    OutputArr = ARRAY[0..MAX_OUTPUT] OF integer; {Array of 40 integers starting from arr[1] to arr[40] - arr[0] is the size}
+VAR
+    arr1 : InputArr; {Input array 1}
+    arr2 : InputArr; {Input array 2}
+    arr3 : OutputArr; {Output array 1 - to print}
+
+{Read a line of integers from the standard input}
+PROCEDURE ReadIntegers(VAR arr: InputArr);
+    VAR
+        i: integer; {Index of the element to print. Stores the number of integers read after loop.}
+    BEGIN
+        i := 1; {initialize i with value 0 (first index)}
+        WHILE (NOT eof) AND (NOT eoln) AND (i <= MAX_INPUT) DO BEGIN {from arr[1] to arr[20] inclusive}
+            read(arr[i]); {20 maximum values from arr[1] to arr[20]}
+            i := i + 1; {increment i after storing a value}
+        END;
+        arr[0] := i - 1; {put size of array in the 0th index (-1 to fix off by 1 error)}
+        readln; {Consume the rest of the line: any blanks after and newlinw}
+    END;
+
+{Pass each array by reference to a Print routine that prints the array values}
+PROCEDURE Print(VAR arr: ARRAY OF integer); {Prints both InputArr and OutputArr where size is stored in index 0}
+    VAR
+        i: integer; {Index of the element to print}
+    BEGIN
+        FOR i := 1 TO arr[0] DO {arr[0] stores the number of integers in array}
+            write(arr[i], ' ' ); {Print the element followed by a space}
+        writeln; {For formatting}
+    END;
+
+PROCEDURE Merge(VAR arr1, arr2: InputArr; var arr3: OutputArr);
+    VAR
+        i, j, k : integer;
+    BEGIN
+        i := 1; {first index of arr1}
+        j := 1; {first index of arr2}
+        k := 1; {first index of arr3}
+        {Merge array in ascending order}
+        WHILE (i <= arr1[0]) AND (j <= arr2[0]) DO BEGIN
+            IF arr1[i] < arr2[j] THEN BEGIN
+                arr3[k] := arr1[i];
+                i := i + 1;
+                k := k + 1;
+            END
+            ELSE BEGIN
+                arr3[k] := arr2[j];
+                j := j + 1;
+                k := k + 1; 
+            END;
+        END;
+        {Merge leftover greatest/equal elements in arr1}
+        WHILE (i <= arr1[0]) DO BEGIN
+            arr3[k] := arr1[i]; 
+            i := i + 1;
+            k := k + 1;
+        END;
+        {Merge leftover greatest/equal elements in arr2}
+        WHILE (j <= arr2[0]) DO BEGIN
+            arr3[k] := arr2[j]; 
+            j := j + 1;
+            k := k + 1
+        END;
+        arr3[0] := arr1[0] + arr2[0]; {Size of arr3 = size of arr1 + size of arr2}
+    END;
+
+BEGIN
+    {Note: No character (like space) should come after the last integer on the first line}
+    {Note: If 20+ integers appear on the first line, 20 chars will be read in and the remainder of the first line will be in arr2}
+    ReadIntegers(arr1);
+    ReadIntegers(arr2);
+    Merge(arr1, arr2, arr3);
+    write('Array 1: ');
+    Print(arr1); {Pass each array by reference to a Print routine that prints the array values.}
+    write('Array 2: ');
+    Print(arr2); {Pass each array by reference to a Print routine that prints the array values.}
+    write('Array 3: ');
+    Print(arr3); {Pass the merged array to the Print routine.}
+END.

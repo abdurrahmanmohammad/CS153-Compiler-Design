@@ -1,0 +1,7 @@
+PROGRAM GoSpartans;
+VAR
+   i: integer; {Loop variable}
+BEGIN
+    FOR i := 1  to 10 do {Iterate loop 10 times}
+        writeln('Go, Spartans!'); {Prints “Go, Spartans!” 10 times to the standard output}
+END.

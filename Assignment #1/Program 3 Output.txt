@@ -1,0 +1,41 @@
+Free Pascal Compiler version 3.0.4 [2018/04/10] for x86_64
+Copyright (c) 1993-2017 by Florian Klaempfl and others
+Target OS: Linux for x86-64
+Compiling jdoodle.pas
+Linking jdoodle
+154 lines compiled, 0.1 sec
+Sorted presidents:
+John Kennedy
+Lyndon Johnson
+Richard Nixon
+Gerald Ford
+Jimmy Carter
+Ronald Reagan
+George H.W. Bush
+Bill Clinton
+George W. Bush
+Barack Obama
+
+Presidents in term during 1975:
+Gerald Ford
+
+Presidents in term during 1963:
+John Kennedy
+Lyndon Johnson
+
+Presidents in term during 1989:
+Ronald Reagan
+George H.W. Bush
+
+Presidents in term during 2019:
+no match
+
+Presidents in term during 2001:
+Bill Clinton
+George W. Bush
+
+Presidents in term during 2016:
+Barack Obama
+
+
+/usr/sbin/ld: warning: link.res contains output sections; did you forget -T?

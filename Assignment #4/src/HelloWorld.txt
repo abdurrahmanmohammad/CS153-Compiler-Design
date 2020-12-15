@@ -1,0 +1,23 @@
+PROGRAM HelloWorld;
+
+BEGIN
+    i := 0;
+    
+    REPEAT
+        i := i + 1;
+        write('#'); write(i);
+        writeln(': Hello, world!');
+    UNTIL i = 5;
+    
+    i := 3; even := -999; odd := -999; prime := -999;
+
+    CASE i+1 OF
+        1:       j := i;
+        -8:      j := 8*i;
+        5, 7, 4: j := 574*i;
+    END;
+    
+    write('j = '); writeln(j);
+    writeln;
+
+END.

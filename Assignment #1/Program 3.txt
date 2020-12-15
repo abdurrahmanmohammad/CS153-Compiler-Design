@@ -1,0 +1,155 @@
+Program PresidentRecords(input, output);
+CONST
+    MAX_PRESIDENTS = 20; {Store all the records in an array of records that’s large enough to hold 20 records}
+TYPE
+    Year = 1000..9999; {Range of a 4 digit number}
+    President = RECORD
+                      startYear : Year; {The starting year of the president’s term (4 digits)}
+                      endYear : Year; {The ending year of the president’s term (4 digits)}
+                      firstName : string; {The president’s first name}
+                      middleInitials : string; {The president’s middle initials with periods (not all presidents have middle initials)}
+                      lastName : string; {The president’s last name}
+                END;
+    PresidentsArr = ARRAY[1..MAX_PRESIDENTS] OF President; {Array of records that’s large enough to hold 20 President records}
+VAR
+    presidentCount : integer; {Number of president records}
+    presidents : PresidentsArr; {Array of president records}
+    
+{Read a first or last name and return it by reference}
+PROCEDURE ReadName(VAR name : string);
+    VAR
+        ch : char;
+    BEGIN
+        name := '';   {Initialize to the empty string}
+        {Skip initial blanks}
+        REPEAT
+            read(ch); {Read char: could be a blank or a valid char}
+        UNTIL (ch <> ' ') OR eoln OR eof; {If ch is a blank, skip until we read a valid char or end of line}
+        
+        name := name + ch; {Append first valid char to name}
+        
+        {Loop to read name characters until the field separator}
+        REPEAT
+            IF NOT eoln THEN BEGIN
+                read(ch);  {Name character}
+                IF ch <> ' ' THEN name := name + ch; {If we read a blank (which signifies the end), don't append blank to name}
+            END;
+        UNTIL (ch = ' ') OR eoln OR eof;
+    END;
+
+{Read the president records}
+PROCEDURE ReadPresidents;
+    VAR
+        i : integer;
+        count : integer;
+        temp : string; {Decide whether this is middle initials or last name}
+    BEGIN
+        count := 1; {Initialize count to 1 (index 1)}
+        read(i); {First starting year}
+        {Read to the end sentinel or until MAX_RECORDS have been read}
+        WHILE (NOT eof) AND (0 < i) AND (count <= MAX_PRESIDENTS) DO BEGIN
+            WITH presidents[count] DO BEGIN
+                startYear := i; {starting year}
+                read(endYear); {ending year (integer)}
+                ReadName(firstName); {first name}
+                ReadName(temp); {Can be middle initial or last name}
+                IF (NOT eoln) THEN BEGIN {If not end of line, temp is miidle initials}
+                    middleInitials := temp;
+                    ReadName(lastName);
+                END
+                ELSE BEGIN {If end of line, temp is last name}
+                    lastName := temp;
+                END;
+             count := count + 1;
+            END;
+            readln; {finish input line}
+            read(i); {next starting year}
+        END;
+        presidentCount := count - 1; {Fix off by 1 error}
+    END;
+
+{Print the array of presidents}
+PROCEDURE PrintPresidents;
+    VAR
+        i : integer;
+    BEGIN
+        FOR i := 1 TO presidentCount DO BEGIN
+            WITH presidents[i] DO BEGIN
+                IF (middleInitials = '') THEN {If no middle initials}
+                    writeln(firstName, ' ', lastName) {print the presidents (names) only}
+                    {writeln(startYear, ' ', endYear, ' ', firstName, ' ', lastName)}
+                ELSE
+                    writeln(firstName, ' ', middleInitials, ' ', lastName); {print the presidents (names) only}
+                    {writeln(startYear, ' ', endYear, ' ', firstName, ' ', middleInitials, ' ', lastName);}
+            END;
+        END;
+    END;
+
+{Sort the presidents array on ascending starting year}
+PROCEDURE SortPresidents;
+    VAR
+        i, j : integer;
+        temp : President;
+    BEGIN
+        FOR i := 1 TO presidentCount - 1 DO BEGIN
+            FOR j := i + 1 TO presidentCount DO BEGIN
+                IF presidents[i].startYear > presidents[j].startYear THEN BEGIN {Swap records}
+                    temp := presidents[i];
+                    presidents[i] := presidents[j];
+                    presidents[j] := temp;
+
+                END;
+            END;
+        END;
+    END;
+
+{Find the president(s) who was in office during a particular year}
+PROCEDURE PrintInOffice(VAR year : integer);
+    VAR
+        i : integer;
+        count : integer; {Keeps track of the number of presidents printed}
+    BEGIN
+        writeln('Presidents in term during ', year, ':');
+        count := 0; {Initialize count to 0}
+        FOR i := 1 TO presidentCount DO BEGIN
+            IF (presidents[i].startYear <= year) AND (year <= presidents[i].endYear) THEN
+                IF (presidents[i].middleInitials = '') THEN BEGIN {If no middle initials}
+                    writeln(presidents[i].firstName, ' ', presidents[i].lastName); {print the presidents (names) only}
+                    {writeln(startYear, ' ', endYear, ' ', firstName, ' ', lastName)}
+                    count := count + 1;
+                END
+                ELSE BEGIN
+                    writeln(presidents[i].firstName, ' ', presidents[i].middleInitials, ' ', presidents[i].lastName); {print the presidents (names) only}
+                    {writeln(startYear, ' ', endYear, ' ', firstName, ' ', middleInitials, ' ', lastName);}
+                    count := count + 1;
+                END;
+        END;
+        IF count = 0 THEN
+            writeln('no match'); {If no presidents printed}
+        
+    END;
+
+{Read the list of search years terminated by -1}
+PROCEDURE ReadYears;
+    VAR
+        i : integer;
+    BEGIN
+        read(i); {First year}
+        WHILE i > 0 DO BEGIN {Read to -1}
+            PrintInOffice(i);
+            writeln;
+            read(i); {next starting year}
+        END;
+    END;
+
+BEGIN
+    {writeln('Number of read presidents: ', presidentCount);
+    PrintPresidents;
+    writeln;}
+    ReadPresidents; {Read the input file and store the presidents’ data into the array of records}
+    writeln('Sorted presidents:');
+    SortPresidents; {Sort the array into ascending order by starting year}
+    PrintPresidents; {Print the presidents in sorted order}
+    writeln();
+    ReadYears; {search the array for the matching presidents and print the search year and the matching presidents’ names}
+END.

@@ -1,0 +1,53 @@
+executed program output:
+i = 1
+i = 2
+i = 3
+i = 4
+i = 5
+
+i = 1, j = 4
+i = 1, j = 3
+i = 1, j = 2
+i = 1, j = 1
+i = 2, j = 4
+i = 2, j = 3
+i = 2, j = 2
+i = 2, j = 1
+i = 3, j = 4
+i = 3, j = 3
+i = 3, j = 2
+i = 3, j = 1
+
+abcdefghijklmnopqrstuvwxyz
+ZYXWVUTSRQPONMLKJIHGFEDCBA
+
+                 110 statements executed.
+                   0 runtime errors.
+                   6 milliseconds execution time.
+
+
+compiled program output:
+
+i = 1
+i = 2
+i = 3
+i = 4
+i = 5
+
+i = 1, j = 4
+i = 1, j = 3
+i = 1, j = 2
+i = 1, j = 1
+i = 2, j = 4
+i = 2, j = 3
+i = 2, j = 2
+i = 2, j = 1
+i = 3, j = 4
+i = 3, j = 3
+i = 3, j = 2
+i = 3, j = 1
+
+abcdefghijklmnopqrstuvwxyz
+ZYXWVUTSRQPONMLKJIHGFEDCBA
+
+[3 milliseconds execution time.]
